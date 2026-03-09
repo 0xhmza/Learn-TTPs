@@ -504,6 +504,58 @@ body {
     gap: 16px;
 }
 
+.site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--bg-secondary, #1a1a2e);
+    border-top: 1px solid var(--border, rgba(255,255,255,0.08));
+    font-size: 0.78rem;
+    color: var(--text-muted, #888);
+    z-index: 900;
+}
+
+.github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.65rem;
+    border: 1px solid var(--border, rgba(255,255,255,0.15));
+    border-radius: 6px;
+    color: var(--text-muted, #aaa);
+    text-decoration: none;
+    font-size: 0.78rem;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.github-btn:hover {
+    border-color: var(--accent, #58a6ff);
+    color: var(--accent, #58a6ff);
+}
+
+.github-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.footer-credit a {
+    color: var(--text-muted, #aaa);
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.footer-credit a:hover {
+    color: var(--accent, #58a6ff);
+}
+
 .card-front-footer {
     width: 100%;
     padding: 14px 24px;
