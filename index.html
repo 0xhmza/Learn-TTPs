@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MITRE ATT&CK Flashcards</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="view-welcome" class="view active">
+            <div class="welcome-container">
+                <div class="logo">🛡️</div>
+                <h1>MITRE ATT&CK<br><span class="accent">Flashcards</span></h1>
+                <p class="subtitle">Master Techniques, Tactics & Mitigations with spaced repetition</p>
+                
+                <div class="stats-bar" id="welcome-stats"></div>
+
+                <div class="category-grid">
+                    <button class="category-card" onclick="App.showTTPs()">
+                        <div class="category-icon">⚔️</div>
+                        <h2>Techniques</h2>
+                        <p class="category-desc">Learn ATT&CK techniques grouped by tactic</p>
+                        <span class="category-count" id="ttp-count"></span>
+                    </button>
+                    <button class="category-card" onclick="App.showMitigations()">
+                        <div class="category-icon">🛡️</div>
+                        <h2>Mitigations</h2>
+                        <p class="category-desc">Learn countermeasures and defensive strategies</p>
+                        <span class="category-count" id="mit-count"></span>
+                    </button>
+                </div>
+
+                <div class="welcome-actions">
+                    <button class="btn btn-secondary" onclick="App.showStats()">📊 Statistics</button>
+                    <button class="btn btn-secondary" onclick="App.showSettings()">⚙️ Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sub-category Selection (TTPs by tactic) -->
+        <div id="view-subcategory" class="view">
+            <header class="top-bar">
+                <button class="btn-back" onclick="App.goHome()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <h2 id="subcat-title">Select Tactics</h2>
+                <div></div>
+            </header>
+            <div class="subcat-container">
+                <div class="subcat-controls">
+                    <button class="btn btn-accent btn-study-all" id="btn-study-due" onclick="App.studyDue()">
+                        🔥 Study Due Cards <span id="due-count-badge" class="badge"></span>
+                    </button>
+                    <button class="btn btn-secondary btn-study-all" onclick="App.studyAll()">📚 Study All</button>
+                </div>
+                <div class="subcat-grid" id="subcat-grid"></div>
+            </div>
+        </div>
+
+        <!-- Study / Flashcard View -->
+        <div id="view-study" class="view">
+            <header class="top-bar">
+                <button class="btn-back" onclick="App.exitStudy()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <div class="study-progress">
+                    <span id="study-counter">0 / 0</span>
+                    <div class="progress-bar"><div class="progress-fill" id="study-progress-bar"></div></div>
+                </div>
+                <div></div>
+            </header>
+            <div class="study-container">
+                <div class="flashcard-wrapper">
+                    <div class="flashcard" id="flashcard" onclick="App.flipCard()">
+                        <div class="flashcard-front" id="card-front">
+                            <div class="card-front-header">
+                                <h2 class="card-name" id="card-name"></h2>
+                                <div class="card-back-meta">
+                                    <span class="card-badge" id="card-badge"></span>
+                                    <span class="card-id" id="card-id"></span>
+                                </div>
+                            </div>
+                            <div class="card-front-body">
+                                <div class="card-tags" id="card-tags"></div>
+                                <p class="card-hint">Tap to reveal answer</p>
+                            </div>
+                        </div>
+                        <div class="flashcard-back hidden" id="card-back">
+                            <div class="card-back-header">
+                                <h3 class="card-name-back" id="card-name-back"></h3>
+                                <div class="card-back-meta">
+                                    <span class="card-badge" id="card-badge-back"></span>
+                                    <span class="card-id-small" id="card-id-back"></span>
+                                </div>
+                            </div>
+                            <div class="card-back-body">
+                                <div class="card-description" id="card-description"></div>
+                            </div>
+                            <div class="card-back-footer">
+                                <a class="card-link" id="card-link" href="#" target="_blank" rel="noopener noreferrer">View on MITRE ATT&CK →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rating-buttons" id="rating-buttons" style="display:none;">
+                    <button class="btn-rate btn-again" onclick="App.rateCard(0)">
+                        <span class="rate-label">Again</span>
+                        <span class="rate-time">&lt;1m</span>
+                    </button>
+                    <button class="btn-rate btn-hard" onclick="App.rateCard(1)">
+                        <span class="rate-label">Hard</span>
+                        <span class="rate-time" id="hard-interval"></span>
+                    </button>
+                    <button class="btn-rate btn-good" onclick="App.rateCard(2)">
+                        <span class="rate-label">Good</span>
+                        <span class="rate-time" id="good-interval"></span>
+                    </button>
+                    <button class="btn-rate btn-easy" onclick="App.rateCard(3)">
+                        <span class="rate-label">Easy</span>
+                        <span class="rate-time" id="easy-interval"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Complete -->
+        <div id="view-complete" class="view">
+            <div class="complete-container">
+                <div class="complete-icon">🎉</div>
+                <h2>Session Complete!</h2>
+                <div class="complete-stats" id="complete-stats"></div>
+                <div class="complete-actions">
+                    <button class="btn btn-accent" onclick="App.goHome()">Back to Home</button>
+                    <button class="btn btn-secondary" onclick="App.showStats()">View Statistics</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics View -->
+        <div id="view-stats" class="view">
+            <header class="top-bar">
+                <button class="btn-back" onclick="App.goHome()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <h2>Statistics</h2>
+                <div></div>
+            </header>
+            <div class="stats-container" id="stats-container"></div>
+        </div>
+
+        <!-- Settings View -->
+        <div id="view-settings" class="view">
+            <header class="top-bar">
+                <button class="btn-back" onclick="App.goHome()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <h2>Settings</h2>
+                <div></div>
+            </header>
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h3>📦 Progress Data</h3>
+                    <p>Your progress is stored locally in your browser. Export it to keep a backup or transfer to another device.</p>
+                    <div class="settings-actions">
+                        <button class="btn btn-accent" onclick="App.exportProgress()">⬇️ Export Progress</button>
+                        <label class="btn btn-secondary upload-btn">
+                            ⬆️ Import Progress
+                            <input type="file" accept=".json" onchange="App.importProgress(event)" hidden>
+                        </label>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <h3>🔄 New Cards Per Session</h3>
+                    <p>Maximum number of new cards introduced per study session.</p>
+                    <div class="setting-row">
+                        <input type="range" id="new-cards-slider" min="5" max="50" step="5" value="20" oninput="App.updateNewCards(this.value)">
+                        <span id="new-cards-value">20</span>
+                    </div>
+                </div>
+                <div class="settings-section danger-zone">
+                    <h3>⚠️ Danger Zone</h3>
+                    <button class="btn btn-danger" onclick="App.resetProgress()">Reset All Progress</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+        <p>Loading MITRE ATT&CK data...</p>
+    </div>
+
+    <script src="data/techniques.js"></script>
+    <script src="data/mitigations.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
