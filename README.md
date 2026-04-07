@@ -1,86 +1,72 @@
-# Learn TTPs
+# 🛡️ Learn TTPs
 
-> **MITRE ATT&CK flashcards — spaced repetition for the modern defender.**
+> **Master the attacker's playbook. Become the defender they fear.**
 
-Adversary TTPs don't stand still. MITRE ATT&CK is updated twice a year, new sub-techniques appear, tactics get re-categorised, and defenders who haven't kept up quietly fall behind. **Learn TTPs** is a static-site flashcard app that turns the entire ATT&CK knowledge base into a spaced-repetition study deck — no account, no server, no install.
+The cyber threat landscape never sleeps — and neither do the adversaries in it. Every day, attackers move through networks using techniques that have names, IDs, and documented patterns. **Learn TTPs** puts that entire playbook in your hands and trains you to recognize it on sight.
 
----
-
-## Why it exists
-
-Reading a technique description once doesn't mean you'll recognise it in the wild. Spaced repetition forces you back to a card right before your brain would have forgotten it — a few weeks of daily reviews and detection names like *T1059.001 – PowerShell* or *T1078 – Valid Accounts* stop being trivia and start becoming reflexes.
-
-The MITRE ATT&CK framework is standard vocabulary for red teams, blue teams, threat intel analysts, and SOC triage. Knowing it fluently means faster ticket writing, sharper threat models, and better conversations with every team you work with.
+No accounts. No subscriptions. No fluff. Just you, your brain, and 700+ real-world attack techniques from the MITRE ATT&CK framework.
 
 ---
 
-## Features
+## 🔥 Why this hits different
 
-- **Anki-style SM-2 algorithm** — cards are scheduled based on how well you know them; easy cards resurface less often, hard cards more often.
-- **Two decks** — *Techniques* (grouped by tactic) and *Mitigations* (countermeasures and defensive controls).
-- **Session stats** — see your again / hard / good / easy split per session.
-- **Persistent progress** — state is stored in IndexedDB (localStorage as fallback); clears only when you reset.
-- **Fully offline** — no CDN fonts, no external requests. Open `index.html` and study.
-- **Configurable new-cards-per-session** cap.
+Most people *read* about TTPs once and forget them by next Tuesday. That's not how expertise works.
 
----
+**Learn TTPs** uses spaced repetition — the same science-backed method used by medical students, language learners, and anyone serious about retaining knowledge long-term. The app tracks exactly what you know, what you're shaky on, and what you've nailed — then shows you each card at the perfect moment before you'd forget it.
 
-## Data
+A few weeks in, and technique names like **T1059.001 · PowerShell** or **T1078 · Valid Accounts** stop being trivia. They become reflexes. You start *thinking* in TTPs.
 
-Flashcard content is sourced directly from the MITRE ATT&CK dataset:
-
-| File | Contents |
-|------|----------|
-| `techniques.csv` | Enterprise ATT&CK techniques and sub-techniques (ID, name, description, tactics, platforms) |
-| `mitigations.csv` | ATT&CK mitigations (ID, name, description) |
-
-Both files can be refreshed from the official MITRE ATT&CK GitHub release when a new version ships.
+> *"Knowing the attacker's language fluently means faster detections, sharper threat models, and conversations that actually move the needle."*
 
 ---
 
-## Usage
+## ✨ What's inside
+
+| Mode | What you'll do |
+|------|----------------|
+| 🃏 **Flashcards** | Flip through techniques and mitigations using spaced repetition — the app remembers your progress so you always study the right cards |
+| 🎯 **Guess the Mitigation** | An attack technique is shown. You pick the defenses that stop it. No hints, no hand-holding — pure applied knowledge |
+
+**Everything else you need:**
+- 🧠 **SM-2 spaced repetition** — the proven algorithm behind Anki, adapted for ATT&CK
+- 📊 **Session statistics** — watch your knowledge grow in real time
+- 💾 **Persistent progress** — your streaks and scores survive browser restarts
+- ✈️ **100% offline** — open `index.html` and go, no internet required
+- 🎨 **Dark cyber aesthetic** — because it slaps
+
+---
+
+## 🚀 Get started in 10 seconds
 
 ```bash
-# Clone and open — that's it
 git clone https://github.com/0xhmza/learn-ttps.git
 cd learn-ttps
-# Open index.html in your browser
+# Open index.html in your browser — that's it
 ```
 
-Or visit the live version at **[0xhmza.github.io/learn-ttps](https://0xhmza.github.io/learn-ttps)** *(if hosted).*
+No build step. No `npm install`. No Docker container. Just open and study.
 
 ---
 
-## Project structure
+## 🎯 Who this is for
 
-```
-.
-├── index.html          # App shell and all views
-├── style.css           # Single-file stylesheet
-├── app.js              # SM-2 engine, CSV parser, routing
-├── techniques.csv      # ATT&CK techniques dataset
-├── mitigations.csv     # ATT&CK mitigations dataset
-└── data/               # Optional extended data
-```
+- **SOC analysts** tired of Googling technique names mid-investigation
+- **Red teamers** who want to speak ATT&CK fluently, not just use the wiki
+- **Threat intel folks** mapping reports to framework IDs at speed
+- **Blue teamers** building detections and wanting to know exactly what they're defending against
+- **Anyone preparing for** OSCP, PNPT, BTL1, or any security cert that touches adversary behavior
 
 ---
 
-## How the scheduler works
+## 📄 License
 
-Cards cycle through three states: **New → Learning → Review**.
-
-| Rating | Meaning | Effect |
-|--------|---------|--------|
-| Again | Forgot completely | Reset to Learning; interval → 1 day |
-| Hard | Remembered with effort | Interval × 1.2 |
-| Good | Normal recall | Interval × ease factor (starts at 2.5) |
-| Easy | Instant recall | Interval × ease × 1.3; ease factor +0.15 |
-
-Ease factor decreases on *Hard* and *Again*, preventing easy cards from dominating your queue.
+MIT — study hard, share freely, defend well.
 
 ---
 
-## License
+<div align="center">
 
-MIT — do whatever you want with it, just don't claim you wrote the ATT&CK data.
+Built with ❤️ by [@0xhmza](https://github.com/0xhmza)
+
+</div>
 
