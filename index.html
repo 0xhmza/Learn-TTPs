@@ -31,6 +31,12 @@
                         <p class="category-desc">Learn countermeasures and defensive strategies</p>
                         <span class="category-count" id="mit-count"></span>
                     </button>
+                    <button class="category-card quiz-card" onclick="App.startQuiz()">
+                        <div class="category-icon">🎯</div>
+                        <h2>Guess the Mitigation</h2>
+                        <p class="category-desc">Can you match attacks to their defenses?</p>
+                        <span class="category-count" id="quiz-count"></span>
+                    </button>
                 </div>
 
                 <div class="welcome-actions">
@@ -145,6 +151,55 @@
             <div class="stats-container" id="stats-container"></div>
         </div>
 
+        <!-- Quiz: Guess the Mitigation -->
+        <div id="view-quiz" class="view">
+            <header class="top-bar">
+                <button class="btn-back" onclick="App.exitQuiz()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+                <div class="quiz-scoreboard">
+                    <span class="quiz-score-item" id="quiz-score-display">🎯 <span id="quiz-score">0</span></span>
+                    <span class="quiz-score-item" id="quiz-streak-display">🔥 <span id="quiz-streak">0</span></span>
+                </div>
+                <div class="quiz-progress-wrap">
+                    <span id="quiz-counter" class="quiz-counter">0 / 0</span>
+                </div>
+            </header>
+            <div class="quiz-container">
+                <div class="quiz-motivational" id="quiz-motivational"></div>
+                <div class="quiz-question-card">
+                    <div class="quiz-question-header">
+                        <span class="quiz-label">🔴 ATTACK TECHNIQUE</span>
+                        <div class="quiz-technique-id" id="quiz-tech-id"></div>
+                    </div>
+                    <h2 class="quiz-technique-name" id="quiz-tech-name"></h2>
+                    <div class="quiz-technique-tactics" id="quiz-tech-tactics"></div>
+                    <p class="quiz-instruction">Select all mitigations that defend against this attack:</p>
+                </div>
+                <div class="quiz-options" id="quiz-options"></div>
+                <div class="quiz-actions" id="quiz-actions">
+                    <button class="btn btn-accent quiz-submit-btn" id="quiz-submit" onclick="App.submitQuiz()" disabled>✓ Submit Answer</button>
+                </div>
+                <div class="quiz-feedback hidden" id="quiz-feedback">
+                    <div class="quiz-feedback-header" id="quiz-feedback-header"></div>
+                    <div class="quiz-feedback-body" id="quiz-feedback-body"></div>
+                    <button class="btn btn-accent quiz-next-btn" onclick="App.nextQuizQuestion()">Next Question →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Complete -->
+        <div id="view-quiz-complete" class="view">
+            <div class="complete-container quiz-complete-container">
+                <div class="complete-icon">🏆</div>
+                <h2 id="quiz-complete-title">Quiz Complete!</h2>
+                <p class="quiz-complete-subtitle" id="quiz-complete-subtitle"></p>
+                <div class="complete-stats" id="quiz-complete-stats"></div>
+                <div class="complete-actions">
+                    <button class="btn btn-accent" onclick="App.startQuiz()">🎯 Play Again</button>
+                    <button class="btn btn-secondary" onclick="App.goHome()">Back to Home</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Settings View -->
         <div id="view-settings" class="view">
             <header class="top-bar">
@@ -186,10 +241,20 @@
         <p>Loading MITRE ATT&CK data...</p>
     </div>
 
+    <!-- Credit Footer -->
+    <footer class="site-footer" id="site-footer">
+        <span class="footer-credit">Built by <a href="https://github.com/0xhmza" target="_blank" rel="noopener noreferrer">@0xhmza</a></span>
+        <a class="github-btn" href="https://github.com/0xhmza" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            GitHub
+        </a>
+    </footer>
+
    
 
     <script src="data/techniques.js"></script>
     <script src="data/mitigations.js"></script>
+    <script src="data/technique_mitigations.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

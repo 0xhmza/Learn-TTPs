@@ -7,6 +7,7 @@ const App = (() => {
     // ===== STATE =====
     let techniques = [];
     let mitigations = [];
+    let techMitigations = {}; // technique ID -> [{id, name}]
     let progress = {};     // { cardId: { interval, ease, due, reps, lapses, state } }
     let settings = { newCardsPerSession: 20 };
     let currentDeck = [];  // cards for current study session
@@ -14,6 +15,17 @@ const App = (() => {
     let isFlipped = false;
     let currentMode = '';  // 'techniques' or 'mitigations'
     let sessionStats = { again: 0, hard: 0, good: 0, easy: 0, reviewed: 0 };
+
+    // Quiz state
+    let quizDeck = [];
+    let quizIndex = 0;
+    let quizScore = 0;
+    let quizStreak = 0;
+    let quizBestStreak = 0;
+    let quizCorrectMits = [];  // correct mitigation IDs for current question
+    let quizSelected = new Set();
+    let quizAnswered = false;
+    const QUIZ_ROUND_SIZE = 10;
 
     // ===== CONSTANTS =====
     const STORAGE_KEY = 'mitre_flashcards_progress';
@@ -224,6 +236,11 @@ const App = (() => {
         }
         techniques = window.MITRE_TECHNIQUES;
         mitigations = window.MITRE_MITIGATIONS;
+        techMitigations = window.MITRE_TECHNIQUE_MITIGATIONS || {};
+    }
+
+    function isQuizAvailable() {
+        return Object.keys(techMitigations).length > 0;
     }
 
     // ===== VIEW MANAGEMENT =====
@@ -256,6 +273,14 @@ const App = (() => {
 
         document.getElementById('ttp-count').textContent = techniques.length + ' techniques';
         document.getElementById('mit-count').textContent = mitigations.length + ' mitigations';
+        
+        const quizCountEl = document.getElementById('quiz-count');
+        if (isQuizAvailable()) {
+            const quizTechCount = techniques.filter(t => techMitigations[t.id] && techMitigations[t.id].length > 0).length;
+            quizCountEl.textContent = quizTechCount + ' challenges';
+        } else {
+            quizCountEl.textContent = 'unavailable';
+        }
     }
 
     // ===== TTP SUB-CATEGORIES (by Tactic) =====
@@ -732,6 +757,285 @@ const App = (() => {
         return div.innerHTML;
     }
 
+    // ===== QUIZ: GUESS THE MITIGATION =====
+    const MOTIVATIONAL_MESSAGES = [
+        { min: 0, msgs: ['Keep going! Every expert was once a beginner 💪', 'Learning is a journey, not a destination 🚀', 'You got this! Stay curious 🧠'] },
+        { min: 3, msgs: ['🔥 Nice streak! You\'re getting the hang of it!', '⚡ Impressive! Your defense knowledge is growing!', '🎯 Sharp thinking! Keep it up!'] },
+        { min: 5, msgs: ['🏆 Unstoppable! 5 in a row!', '🌟 You\'re a natural defender!', '💎 Elite-level knowledge incoming!'] },
+        { min: 8, msgs: ['🚀 LEGENDARY streak! SOC analysts would be proud!', '🔒 You\'re basically a human firewall!', '👑 Defensive mastermind right here!'] },
+        { min: 12, msgs: ['🦸 Is that you, CISO?!', '💯 FLAWLESS defense strategy!', '🏅 MITRE would be impressed!'] }
+    ];
+
+    function getMotivationalMessage(streak) {
+        let pool = MOTIVATIONAL_MESSAGES[0].msgs;
+        for (const tier of MOTIVATIONAL_MESSAGES) {
+            if (streak >= tier.min) pool = tier.msgs;
+        }
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function startQuiz() {
+        if (!isQuizAvailable()) {
+            alert('Quiz data not available. Make sure data/technique_mitigations.js is loaded.');
+            return;
+        }
+        // Filter techniques that have mitigations
+        const eligible = techniques.filter(t => techMitigations[t.id] && techMitigations[t.id].length > 0);
+        if (eligible.length === 0) {
+            alert('No technique-mitigation data available!');
+            return;
+        }
+
+        shuffleArray(eligible);
+        quizDeck = eligible.slice(0, QUIZ_ROUND_SIZE);
+        quizIndex = 0;
+        quizScore = 0;
+        quizStreak = 0;
+        quizBestStreak = 0;
+
+        document.getElementById('quiz-score').textContent = '0';
+        document.getElementById('quiz-streak').textContent = '0';
+        showView('view-quiz');
+        showQuizQuestion();
+    }
+
+    function showQuizQuestion() {
+        if (quizIndex >= quizDeck.length) {
+            showQuizComplete();
+            return;
+        }
+
+        quizAnswered = false;
+        quizSelected = new Set();
+
+        const tech = quizDeck[quizIndex];
+        const correctMits = techMitigations[tech.id] || [];
+
+        // Pick correct mitigations to show (cap at 3 if there are many)
+        const shuffledCorrect = shuffleArray([...correctMits]);
+        const shownCorrect = shuffledCorrect.slice(0, Math.min(3, shuffledCorrect.length));
+        quizCorrectMits = shownCorrect.map(m => m.id);
+
+        // Build wrong options from mitigations not in this technique's list
+        const correctIds = new Set(correctMits.map(m => m.id));
+        const wrongPool = mitigations.filter(m => !correctIds.has(m.id));
+        shuffleArray(wrongPool);
+
+        const numWrong = Math.max(2, 6 - shownCorrect.length);
+        const wrongOptions = wrongPool.slice(0, numWrong).map(m => ({ id: m.id, name: m.name }));
+
+        // Combine and shuffle all options
+        const allOptions = [...shownCorrect, ...wrongOptions];
+        shuffleArray(allOptions);
+
+        // Update UI
+        document.getElementById('quiz-tech-id').textContent = tech.id;
+        document.getElementById('quiz-tech-name').textContent = tech.name;
+
+        const tacticsEl = document.getElementById('quiz-tech-tactics');
+        tacticsEl.innerHTML = '';
+        if (tech.tactics) {
+            tech.tactics.forEach(t => {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.textContent = t;
+                tacticsEl.appendChild(tag);
+            });
+        }
+
+        // Render options
+        const optionsEl = document.getElementById('quiz-options');
+        optionsEl.innerHTML = '';
+        allOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-option';
+            btn.dataset.mitId = opt.id;
+            btn.innerHTML = `<span class="quiz-option-check">○</span><span class="quiz-option-id">${escapeHtml(opt.id)}</span><span class="quiz-option-name">${escapeHtml(opt.name)}</span>`;
+            btn.onclick = () => toggleQuizOption(btn, opt.id);
+            optionsEl.appendChild(btn);
+        });
+
+        // Update instruction with correct count
+        const instrEl = document.querySelector('.quiz-instruction');
+        const correctCount = shownCorrect.length;
+        instrEl.textContent = correctCount === 1
+            ? 'Select the mitigation that defends against this attack:'
+            : `Select all ${correctCount} mitigations that defend against this attack:`;
+
+        // Reset actions
+        const submitBtn = document.getElementById('quiz-submit');
+        submitBtn.disabled = true;
+        document.getElementById('quiz-actions').classList.remove('hidden');
+        document.getElementById('quiz-feedback').classList.add('hidden');
+
+        // Update counter
+        document.getElementById('quiz-counter').textContent = `${quizIndex + 1} / ${quizDeck.length}`;
+
+        // Show motivational message
+        const motEl = document.getElementById('quiz-motivational');
+        if (quizStreak > 0) {
+            motEl.textContent = getMotivationalMessage(quizStreak);
+            motEl.classList.add('visible');
+        } else if (quizIndex === 0) {
+            motEl.textContent = '🧠 Test your defensive knowledge!';
+            motEl.classList.add('visible');
+        } else {
+            motEl.classList.remove('visible');
+        }
+    }
+
+    function toggleQuizOption(btn, mitId) {
+        if (quizAnswered) return;
+
+        if (quizSelected.has(mitId)) {
+            quizSelected.delete(mitId);
+            btn.classList.remove('selected');
+            btn.querySelector('.quiz-option-check').textContent = '○';
+        } else {
+            quizSelected.add(mitId);
+            btn.classList.add('selected');
+            btn.querySelector('.quiz-option-check').textContent = '●';
+        }
+
+        document.getElementById('quiz-submit').disabled = quizSelected.size === 0;
+    }
+
+    function submitQuiz() {
+        if (quizAnswered || quizSelected.size === 0) return;
+        quizAnswered = true;
+
+        const correctSet = new Set(quizCorrectMits);
+        let allCorrect = true;
+
+        // Mark each option
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            const mid = btn.dataset.mitId;
+            const isCorrect = correctSet.has(mid);
+            const wasSelected = quizSelected.has(mid);
+
+            btn.classList.remove('selected');
+            if (isCorrect && wasSelected) {
+                btn.classList.add('correct');
+                btn.querySelector('.quiz-option-check').textContent = '✓';
+            } else if (isCorrect && !wasSelected) {
+                btn.classList.add('missed');
+                btn.querySelector('.quiz-option-check').textContent = '✗';
+                allCorrect = false;
+            } else if (!isCorrect && wasSelected) {
+                btn.classList.add('wrong');
+                btn.querySelector('.quiz-option-check').textContent = '✗';
+                allCorrect = false;
+            } else {
+                btn.classList.add('neutral');
+            }
+        });
+
+        // Update score and streak
+        if (allCorrect) {
+            quizScore++;
+            quizStreak++;
+            if (quizStreak > quizBestStreak) quizBestStreak = quizStreak;
+        } else {
+            quizStreak = 0;
+        }
+
+        document.getElementById('quiz-score').textContent = quizScore;
+        document.getElementById('quiz-streak').textContent = quizStreak;
+
+        // Show feedback
+        document.getElementById('quiz-actions').classList.add('hidden');
+        const feedback = document.getElementById('quiz-feedback');
+        feedback.classList.remove('hidden');
+
+        const headerEl = document.getElementById('quiz-feedback-header');
+        if (allCorrect) {
+            headerEl.innerHTML = '<span class="feedback-icon correct-icon">✓</span> Perfect! You nailed it!';
+            headerEl.className = 'quiz-feedback-header feedback-correct';
+        } else {
+            headerEl.innerHTML = '<span class="feedback-icon wrong-icon">✗</span> Not quite — review the correct mitigations';
+            headerEl.className = 'quiz-feedback-header feedback-wrong';
+        }
+
+        // Show all correct mitigations for this technique
+        const tech = quizDeck[quizIndex];
+        const allMits = techMitigations[tech.id] || [];
+        const bodyEl = document.getElementById('quiz-feedback-body');
+        bodyEl.innerHTML = `
+            <p class="feedback-subtitle">All mitigations for <strong>${escapeHtml(tech.name)}</strong>:</p>
+            <ul class="feedback-list">
+                ${allMits.map(m => `<li><span class="feedback-mit-id">${escapeHtml(m.id)}</span> ${escapeHtml(m.name)}</li>`).join('')}
+            </ul>
+        `;
+
+        // Motivational update
+        const motEl = document.getElementById('quiz-motivational');
+        if (allCorrect && quizStreak >= 2) {
+            motEl.textContent = getMotivationalMessage(quizStreak);
+            motEl.classList.add('visible');
+        } else if (!allCorrect) {
+            motEl.textContent = 'Mistakes are proof you\'re learning! 📚';
+            motEl.classList.add('visible');
+        }
+    }
+
+    function nextQuizQuestion() {
+        quizIndex++;
+        showQuizQuestion();
+    }
+
+    function showQuizComplete() {
+        const pct = quizDeck.length > 0 ? Math.round((quizScore / quizDeck.length) * 100) : 0;
+
+        let title, subtitle;
+        if (pct === 100) {
+            title = '🏆 PERFECT SCORE!';
+            subtitle = 'You are a defensive mastermind! Every attack met its match.';
+        } else if (pct >= 80) {
+            title = '🌟 Outstanding!';
+            subtitle = 'Your mitigation knowledge is rock solid. Keep sharpening!';
+        } else if (pct >= 60) {
+            title = '💪 Great effort!';
+            subtitle = 'You\'re on the right track. A few more rounds and you\'ll master it!';
+        } else if (pct >= 40) {
+            title = '📚 Keep Learning!';
+            subtitle = 'Rome wasn\'t built in a day. Every round makes you stronger!';
+        } else {
+            title = '🌱 Just Getting Started';
+            subtitle = 'The best defenders never stop learning. Try the flashcards to build your knowledge!';
+        }
+
+        document.getElementById('quiz-complete-title').textContent = title;
+        document.getElementById('quiz-complete-subtitle').textContent = subtitle;
+
+        document.getElementById('quiz-complete-stats').innerHTML = `
+            <div class="complete-stat-row">
+                <span class="complete-stat-label">Score</span>
+                <span class="complete-stat-value">${quizScore} / ${quizDeck.length} (${pct}%)</span>
+            </div>
+            <div class="complete-stat-row">
+                <span class="complete-stat-label" style="color:var(--orange)">Best Streak</span>
+                <span class="complete-stat-value">🔥 ${quizBestStreak}</span>
+            </div>
+            <div class="complete-stat-row">
+                <span class="complete-stat-label" style="color:var(--green)">Correct</span>
+                <span class="complete-stat-value">${quizScore}</span>
+            </div>
+            <div class="complete-stat-row">
+                <span class="complete-stat-label" style="color:var(--red)">Missed</span>
+                <span class="complete-stat-value">${quizDeck.length - quizScore}</span>
+            </div>
+        `;
+
+        showView('view-quiz-complete');
+    }
+
+    function exitQuiz() {
+        if (quizIndex > 0 && quizIndex < quizDeck.length) {
+            if (!confirm('Exit quiz? Your progress won\'t be saved.')) return;
+        }
+        goHome();
+    }
+
     // ===== KEYBOARD SHORTCUTS =====
     document.addEventListener('keydown', (e) => {
         const studyView = document.getElementById('view-study');
@@ -796,6 +1100,10 @@ const App = (() => {
         updateNewCards,
         exportProgress,
         importProgress,
-        resetProgress
+        resetProgress,
+        startQuiz,
+        submitQuiz,
+        nextQuizQuestion,
+        exitQuiz
     };
 })();
