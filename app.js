@@ -843,6 +843,18 @@ const App = (() => {
             });
         }
 
+        // Show technique description
+        const descEl = document.getElementById('quiz-tech-desc');
+        let desc = tech.description || '';
+        desc = desc.replace(/\(Citation:[^)]*\)/g, '');
+        desc = desc.replace(/<[^>]+>/g, '');
+        desc = desc.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+        desc = desc.replace(/\n{3,}/g, '\n\n');
+        if (desc.length > 500) desc = desc.substring(0, 500) + '...';
+        desc = desc.trim();
+        const safeDesc = desc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        descEl.innerHTML = safeDesc.replace(/`([^`]+)`/g, '<code>$1</code>');
+
         // Render options
         const optionsEl = document.getElementById('quiz-options');
         optionsEl.innerHTML = '';
@@ -850,17 +862,10 @@ const App = (() => {
             const btn = document.createElement('button');
             btn.className = 'quiz-option';
             btn.dataset.mitId = opt.id;
-            btn.innerHTML = `<span class="quiz-option-check">○</span><span class="quiz-option-id">${escapeHtml(opt.id)}</span><span class="quiz-option-name">${escapeHtml(opt.name)}</span>`;
+            btn.innerHTML = `<span class="quiz-option-id">${escapeHtml(opt.id)}</span><span class="quiz-option-name">${escapeHtml(opt.name)}</span>`;
             btn.onclick = () => toggleQuizOption(btn, opt.id);
             optionsEl.appendChild(btn);
         });
-
-        // Update instruction with correct count
-        const instrEl = document.querySelector('.quiz-instruction');
-        const correctCount = shownCorrect.length;
-        instrEl.textContent = correctCount === 1
-            ? 'Select the mitigation that defends against this attack:'
-            : `Select all ${correctCount} mitigations that defend against this attack:`;
 
         // Reset actions
         const submitBtn = document.getElementById('quiz-submit');
@@ -890,11 +895,9 @@ const App = (() => {
         if (quizSelected.has(mitId)) {
             quizSelected.delete(mitId);
             btn.classList.remove('selected');
-            btn.querySelector('.quiz-option-check').textContent = '○';
         } else {
             quizSelected.add(mitId);
             btn.classList.add('selected');
-            btn.querySelector('.quiz-option-check').textContent = '●';
         }
 
         document.getElementById('quiz-submit').disabled = quizSelected.size === 0;
@@ -916,14 +919,11 @@ const App = (() => {
             btn.classList.remove('selected');
             if (isCorrect && wasSelected) {
                 btn.classList.add('correct');
-                btn.querySelector('.quiz-option-check').textContent = '✓';
             } else if (isCorrect && !wasSelected) {
                 btn.classList.add('missed');
-                btn.querySelector('.quiz-option-check').textContent = '✗';
                 allCorrect = false;
             } else if (!isCorrect && wasSelected) {
                 btn.classList.add('wrong');
-                btn.querySelector('.quiz-option-check').textContent = '✗';
                 allCorrect = false;
             } else {
                 btn.classList.add('neutral');
