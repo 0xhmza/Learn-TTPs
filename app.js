@@ -460,21 +460,7 @@ const App = (() => {
         document.getElementById('card-name-back').textContent = card.name;
         
         // Clean up description
-        let desc = card.description || '';
-        desc = desc.replace(/\(Citation:[^)]*\)/g, '');
-        desc = desc.replace(/<[^>]+>/g, '');
-        // Convert markdown links [text](url) to just text
-        desc = desc.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-        // Collapse multiple spaces/newlines
-        desc = desc.replace(/\n{3,}/g, '\n\n');
-        if (desc.length > 1500) {
-            desc = desc.substring(0, 1500) + '...';
-        }
-        // Escape HTML then convert backtick content to <code> tags
-        desc = desc.trim();
-        const safeDesc = desc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const htmlDesc = safeDesc.replace(/`([^`]+)`/g, '<code>$1</code>');
-        document.getElementById('card-description').innerHTML = htmlDesc;
+        document.getElementById('card-description').innerHTML = renderDescription(card.description, 1500);
         
         const link = document.getElementById('card-link');
         link.href = card.url || '#';
@@ -757,6 +743,47 @@ const App = (() => {
         return div.innerHTML;
     }
 
+    /**
+     * Renders a MITRE description string into safe HTML.
+     * Handles: citations, HTML tags, markdown links, bold, italic, code spans, paragraphs.
+     */
+    function renderDescription(raw, maxLength) {
+        let text = raw || '';
+        // Strip citation references like (Citation: Foo 2020)
+        text = text.replace(/\(Citation:[^)]*\)/g, '');
+        // Strip any existing HTML tags
+        text = text.replace(/<[^>]+>/g, '');
+        // Convert markdown links [text](url) → text
+        text = text.replace(/\[([^\]]+)\]\([^)]*\)/g, '$1');
+        // Collapse 3+ newlines to double
+        text = text.replace(/\n{3,}/g, '\n\n');
+        text = text.trim();
+        // Truncate if needed
+        if (maxLength && text.length > maxLength) {
+            text = text.substring(0, maxLength).replace(/\s+\S*$/, '') + '\u2026';
+        }
+        // HTML-escape the plain text before applying markup
+        const escape = s => s
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        // Split into paragraphs then apply inline formatting
+        const paragraphs = text.split(/\n\n+/);
+        const html = paragraphs.map(para => {
+            let p = escape(para.replace(/\n/g, ' ').trim());
+            // Bold: **text**
+            p = p.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            // Italic: *text* or _text_
+            p = p.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+            p = p.replace(/_([^_]+)_/g, '<em>$1</em>');
+            // Inline code: `text`
+            p = p.replace(/`([^`]+)`/g, '<code>$1</code>');
+            return `<p>${p}</p>`;
+        }).join('');
+        return html;
+    }
+
     // ===== QUIZ: GUESS THE MITIGATION =====
     const MOTIVATIONAL_MESSAGES = [
         { min: 0, msgs: ['Keep going! Every expert was once a beginner 💪', 'Learning is a journey, not a destination 🚀', 'You got this! Stay curious 🧠'] },
@@ -844,16 +871,7 @@ const App = (() => {
         }
 
         // Show technique description
-        const descEl = document.getElementById('quiz-tech-desc');
-        let desc = tech.description || '';
-        desc = desc.replace(/\(Citation:[^)]*\)/g, '');
-        desc = desc.replace(/<[^>]+>/g, '');
-        desc = desc.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
-        desc = desc.replace(/\n{3,}/g, '\n\n');
-        if (desc.length > 500) desc = desc.substring(0, 500) + '...';
-        desc = desc.trim();
-        const safeDesc = desc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        descEl.innerHTML = safeDesc.replace(/`([^`]+)`/g, '<code>$1</code>');
+        document.getElementById('quiz-tech-desc').innerHTML = renderDescription(tech.description, 500);
 
         // Render options
         const optionsEl = document.getElementById('quiz-options');

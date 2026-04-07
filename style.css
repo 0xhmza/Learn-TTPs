@@ -677,22 +677,41 @@ body {
 }
 
 .card-description {
-    font-size: 0.88rem;
-    line-height: 1.75;
+    font-size: 0.875rem;
+    line-height: 1.8;
     color: var(--text2);
     font-weight: 400;
+}
+
+.card-description p {
+    margin: 0 0 0.85em 0;
+}
+
+.card-description p:last-child {
+    margin-bottom: 0;
+}
+
+.card-description strong {
+    color: var(--text1, #e8e8f0);
+    font-weight: 600;
+}
+
+.card-description em {
+    color: var(--accent);
+    font-style: italic;
 }
 
 /* Inline code in descriptions */
 .card-description code {
     font-family: var(--mono);
-    font-size: 0.82rem;
-    background: var(--bg3);
+    font-size: 0.8rem;
+    background: rgba(0, 240, 255, 0.06);
     color: var(--accent);
     padding: 1px 6px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 240, 255, 0.15);
     font-weight: 400;
+    white-space: nowrap;
 }
 
 .card-back-footer {
@@ -1180,15 +1199,48 @@ body {
 .quiz-technique-desc {
     font-size: 0.78rem;
     color: var(--text2, #bbb);
-    line-height: 1.55;
+    line-height: 1.65;
     text-align: left;
     margin-bottom: 18px;
     padding: 10px 14px;
     background: rgba(0, 240, 255, 0.03);
-    border-left: 2px solid var(--accent-dim, rgba(0, 240, 255, 0.15));
+    border-left: 2px solid rgba(0, 240, 255, 0.2);
     border-radius: 0 6px 6px 0;
     max-height: 140px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 240, 255, 0.2) transparent;
+}
+
+.quiz-technique-desc::-webkit-scrollbar {
+    width: 4px;
+}
+
+.quiz-technique-desc::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.quiz-technique-desc::-webkit-scrollbar-thumb {
+    background: rgba(0, 240, 255, 0.2);
+    border-radius: 2px;
+}
+
+.quiz-technique-desc p {
+    margin: 0 0 0.5em 0;
+}
+
+.quiz-technique-desc p:last-child {
+    margin-bottom: 0;
+}
+
+.quiz-technique-desc strong {
+    color: var(--text1, #e8e8f0);
+    font-weight: 600;
+}
+
+.quiz-technique-desc em {
+    color: var(--accent);
+    font-style: italic;
 }
 
 .quiz-technique-desc code {
@@ -1198,6 +1250,7 @@ body {
     padding: 1px 4px;
     border-radius: 3px;
     color: var(--accent);
+    border: 1px solid rgba(0, 240, 255, 0.12);
 }
 
 .quiz-instruction {
