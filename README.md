@@ -22,7 +22,7 @@
 
 </div>
 
----
+
 
 ## What is this?
 
@@ -30,7 +30,7 @@ The cyber threat landscape never sleeps and neither do the adversaries in it. Ev
 
 No accounts. No subscriptions. No fluff. Just you, your brain, and **700+ real-world attack techniques** from the MITRE ATT&CK framework.
 
----
+
 
 ## Why it works
 
@@ -40,7 +40,7 @@ Learn TTPs uses **spaced repetition** — the same science-backed method used by
 
 > *Knowing the attacker's language fluently means faster detections, sharper threat models, and conversations that actually move the needle.*
 
----
+
 
 ## Two ways to train
 
@@ -50,7 +50,7 @@ Flip through techniques and mitigations. The app tracks exactly what you know, w
 ### 🎯 Guess the Mitigation
 An attack technique is shown. You pick the defenses that stop it. No hints, no hand-holding! Pure applied knowledge.
 
----
+
 
 ## Everything included
 
@@ -63,7 +63,7 @@ An attack technique is shown. You pick the defenses that stop it. No hints, no h
 | ⚡ Zero setup | No build step, no `npm install`, no Docker |
 | 🎨 Dark cyber aesthetic | Because it slaps |
 
----
+
 
 ## Get started in 10 seconds
 
@@ -77,7 +77,7 @@ open index.html
 
 > No build step. No dependencies. Just open and study.
 
----
+
 
 ## Who it's for
 
@@ -87,7 +87,7 @@ open index.html
 - **Blue teamers** building detections and wanting to know exactly what they're defending against
 - **Cert preppers** studying for OSCP, PNPT, BTL1, or anything that touches adversary behavior
 
----
+
 
 ## License
 
