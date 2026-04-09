@@ -9,12 +9,10 @@
 <br>
 
 [![Live Demo](https://img.shields.io/badge/▶%20Live%20Demo-0xhmza.github.io%2FLearn--TTPs-534AB7?style=for-the-badge&labelColor=26215C)](https://0xhmza.github.io/Learn-TTPs/)
-[![GitHub](https://img.shields.io/badge/GitHub-0xhmza%2FLearn--TTPs-1a1a2e?style=for-the-badge&logo=github)](https://github.com/0xhmza/Learn-TTPs)
 
 <br>
 
 ![MIT License](https://img.shields.io/badge/License-MIT-3B6D11?style=flat-square&labelColor=EAF3DE)
-![Offline](https://img.shields.io/badge/100%25-Offline-185FA5?style=flat-square&labelColor=E6F1FB)
 ![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-854F0B?style=flat-square&labelColor=FAEEDA)
 ![Techniques](https://img.shields.io/badge/700%2B-Techniques-534AB7?style=flat-square&labelColor=EEEDFE)
 
